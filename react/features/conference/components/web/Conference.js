@@ -2,7 +2,8 @@
 
 import _ from 'lodash';
 import React from 'react';
-
+import { getLocalParticipant } from '../../../base/participants'
+import { db } from '../../../base/config/firebase'
 import VideoLayout from '../../../../../modules/UI/videolayout/VideoLayout';
 import { getConferenceNameForTitle } from '../../../base/conference';
 import { connect, disconnect } from '../../../base/connection';
@@ -15,7 +16,7 @@ import { LargeVideo } from '../../../large-video';
 import { KnockingParticipantList } from '../../../lobby';
 import { Prejoin, isPrejoinPageVisible } from '../../../prejoin';
 import {
-    Toolbox,
+    ToolboxParticipant,
     fullScreenChanged,
     setToolboxAlwaysVisible,
     showToolbox
@@ -90,7 +91,13 @@ type Props = AbstractProps & {
     _showPrejoin: boolean,
 
     dispatch: Function,
-    t: Function
+    t: Function,
+    /**
+     * Local participant - to be used to know who is initiating a call
+     * Particicpants can call the host - their video and audio streams are disabled unless
+     * the meeting host accepts the call
+     */
+    _localParticipant: Object
 }
 
 /**
@@ -109,7 +116,15 @@ class Conference extends AbstractConference<Props, *> {
      */
     constructor(props) {
         super(props);
-
+        //state
+        this.state = {
+            // user: auth().currentUser,
+            calls: [],
+            to: '',
+            from: '',
+            readError: null,
+            writeError: null
+        };
         // Throttle and bind this component's mousemove handler to prevent it
         // from firing too often.
         this._originalOnShowToolbar = this._onShowToolbar;
@@ -131,6 +146,22 @@ class Conference extends AbstractConference<Props, *> {
      * @inheritdoc
      */
     componentDidMount() {
+        /**
+         * Listen to firebase to get any incoming calls
+         */
+        this.setState({ readError: null });
+        try {
+            db.ref("calls").on("value", snapshot => {
+                let calls = [];
+                snapshot.forEach((snap) => {
+                    calls.push(snap.val());
+                });
+                this.setState({ calls });
+            });
+        } catch (error) {
+            this.setState({ readError: error.message });
+        }
+
         document.title = `${this.props._roomName} | ${interfaceConfig.APP_NAME}`;
         this._start();
     }
@@ -176,6 +207,8 @@ class Conference extends AbstractConference<Props, *> {
      * @returns {ReactElement}
      */
     render() {
+        console.log("CALLS", this.state.calls);
+        // console.log("local participant", this.props._localParticipant);
         const {
             // XXX The character casing of the name filmStripOnly utilized by
             // interfaceConfig is obsolete but legacy support is required.
@@ -190,28 +223,28 @@ class Conference extends AbstractConference<Props, *> {
 
         return (
             <div
-                className = { _layoutClassName }
-                id = 'videoconference_page'
-                onMouseMove = { this._onShowToolbar }>
+                className={_layoutClassName}
+                id='videoconference_page'
+                onMouseMove={this._onShowToolbar}>
 
                 <Notice />
                 <Subject />
                 <InviteMore />
-                <div id = 'videospace'>
+                <div id='videospace'>
                     <LargeVideo />
                     <KnockingParticipantList />
-                    { hideLabels || <Labels /> }
-                    <Filmstrip filmstripOnly = { filmstripOnly } />
+                    {hideLabels || <Labels />}
+                    <Filmstrip filmstripOnly={filmstripOnly} />
                 </div>
 
-                { filmstripOnly || _showPrejoin || <Toolbox /> }
-                { filmstripOnly || <Chat /> }
+                {filmstripOnly || _showPrejoin || <ToolboxParticipant localParticipant={this.props._localParticipant} />}
+                {filmstripOnly || <Chat />}
 
-                { this.renderNotificationsContainer() }
+                {this.renderNotificationsContainer()}
 
                 <CalleeInfoContainer />
 
-                { !filmstripOnly && _showPrejoin && <Prejoin />}
+                {!filmstripOnly && _showPrejoin && <Prejoin />}
             </div>
         );
     }
@@ -275,6 +308,7 @@ class Conference extends AbstractConference<Props, *> {
 function _mapStateToProps(state) {
     return {
         ...abstractMapStateToProps(state),
+        _localParticipant: getLocalParticipant(state),
         _iAmRecorder: state['features/base/config'].iAmRecorder,
         _layoutClassName: LAYOUT_CLASSNAMES[getCurrentLayout(state)],
         _roomName: getConferenceNameForTitle(state),
