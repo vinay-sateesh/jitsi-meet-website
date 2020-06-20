@@ -161,8 +161,8 @@ const VideoLayout = {
      * Shows/hides remote video in filmstrip.
      * @param {boolean} true to make the local video visible, false - otherwise
      */
-    setRemoteVideoVisible(remoteVideo, visible) {
-        remoteVideo.setVisible(visible);
+    setRemoteVideoVisible(id, visible) {
+        remoteVideos[id].setVisible(visible);
     },
 
     onRemoteStreamAdded(stream) {
@@ -306,6 +306,7 @@ const VideoLayout = {
 
         this._setRemoteControlProperties(jitsiParticipant, remoteVideo);
         this.addRemoteVideoContainer(id, remoteVideo);
+        this.setRemoteVideoVisible(id, false);
         this.updateMutedForNoTracks(id, 'audio');
         this.updateMutedForNoTracks(id, 'video');
     },

@@ -166,7 +166,8 @@ class Conference extends AbstractConference<Props, *> {
                         : console.log('No notification id set');
                     console.log(this.state.onCall);
                     this.props.dispatch(participantRoleChanged(snap.val().uid, 'onCall'));
-
+                    //Show remote participant view once they are onCall
+                    VideoLayout.setRemoteVideoVisible(snap.val().uid, true);
                     //TODO - if person is already on call disable the call button
                 };
                 /**
@@ -204,17 +205,8 @@ class Conference extends AbstractConference<Props, *> {
      * @inheritdoc
      * returns {void}
      */
-    componentDidUpdate(prevProps, prevState) {
-        /**
-         * Check if theres any new participants on a call
-         * and update the filmstrip accordingly
-         */
-        if (this.props._localParticipant.role !== prevProps._localParticipant.role && this.props._localParticipant.role === 'onCall') {
+    componentDidUpdate(prevProps) {
 
-            const participant = getParticipantById(this.props._state, this.state.onCall[this.state.onCall.length - 1].uid);
-            logger.info('UPDATED', participant)
-            VideoLayout.addRemoteParticipantContainer(participant);
-        }
         if (this.props._shouldDisplayTileView
             === prevProps._shouldDisplayTileView) {
             return;
