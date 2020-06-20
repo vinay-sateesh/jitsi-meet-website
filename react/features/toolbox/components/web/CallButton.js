@@ -5,6 +5,8 @@ import { connect } from '../../../base/redux';
 import AbstractButton from '../../../base/toolbox/components/AbstractButton';
 import type { AbstractButtonProps } from '../../../base/toolbox';
 import { IconMicDisabled, IconMicrophone } from '../../../base/icons';
+import { db } from '../../../base/config/firebase'
+
 type Props = AbstractButtonProps & {
 
     /**
@@ -24,7 +26,11 @@ type Props = AbstractButtonProps & {
     /**
      * Local participant who is making the call
      */
-    localParticipant: Object
+    localParticipant: Object,
+    /**
+     * Name of conference the participant is part of
+     */
+    roomName: string
 }
 class CallButton extends AbstractButton<Props, State> {
     _isMounted: boolean;
@@ -41,6 +47,7 @@ class CallButton extends AbstractButton<Props, State> {
 
         this._isMounted = true;
         this.state = {
+            writeError: false,
 
         };
     }
@@ -54,6 +61,33 @@ class CallButton extends AbstractButton<Props, State> {
         this._isMounted = false;
     }
 
+    async handleSendCall() {
+
+        this.setState({ writeError: null });
+        try {
+            await db.ref("calls").push({
+                roomName: this.props.roomName,
+                timestamp: Date.now(),
+                uid: this.props.localParticipant.id,
+                name: this.props.localParticipant.name ? this.props.localParticipant.name : 'Random Participant'
+            }, (err) => {
+                if (err) {
+                    console.log(err);
+                }
+                else {
+                    console.log('Call Made!')
+                }
+
+            });
+
+        } catch (error) {
+            this.setState({ writeError: error.message });
+        }
+    }
+
+    _handleClick() {
+        this.handleSendCall();
+    }
     render() {
 
         return (super.render())

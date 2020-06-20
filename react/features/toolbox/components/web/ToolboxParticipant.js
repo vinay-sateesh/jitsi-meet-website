@@ -190,7 +190,11 @@ type Props = {
     /**
      * Get the local participant so we know who is making a call
      */
-    localParticipant: Object
+    localParticipant: Object,
+    /**
+     * Name of room participant is part of
+     */
+    roomName: string
 };
 
 /**
@@ -1241,7 +1245,7 @@ class Toolbox extends Component<Props, State> {
                 <div className='button-group-left'>
                     {/* {buttonsLeft.indexOf('desktop') !== -1
                         && this._renderDesktopSharingButton()} */}
-                    <CallButton localParticipant={this.props.localParticipant} />
+                    <CallButton roomName={this.props.roomName} localParticipant={this.props.localParticipant} />
                     {buttonsLeft.indexOf('raisehand') !== -1
                         && <ToolbarButton
                             accessibilityLabel={t('toolbar.accessibilityLabel.raiseHand')}

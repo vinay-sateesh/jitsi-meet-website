@@ -54,7 +54,7 @@ const UIListeners = new Map([
  * @return {boolean} {true} to indicate that we're currently in full screen
  * mode, {false} otherwise
  */
-UI.isFullScreen = function() {
+UI.isFullScreen = function () {
     return UIUtil.isFullScreen();
 };
 
@@ -62,7 +62,7 @@ UI.isFullScreen = function() {
  * Returns true if the etherpad window is currently visible.
  * @returns {Boolean} - true if the etherpad window is currently visible.
  */
-UI.isEtherpadVisible = function() {
+UI.isEtherpadVisible = function () {
     return Boolean(etherpadManager && etherpadManager.isVisible());
 };
 
@@ -70,14 +70,14 @@ UI.isEtherpadVisible = function() {
  * Returns true if there is a shared video which is being shown (?).
  * @returns {boolean} - true if there is a shared video which is being shown.
  */
-UI.isSharedVideoShown = function() {
+UI.isSharedVideoShown = function () {
     return Boolean(sharedVideoManager && sharedVideoManager.isSharedVideoShown);
 };
 
 /**
  * Notify user that server has shut down.
  */
-UI.notifyGracefulShutdown = function() {
+UI.notifyGracefulShutdown = function () {
     messageHandler.showError({
         descriptionKey: 'dialog.gracefulShutdown',
         titleKey: 'dialog.serviceUnavailable'
@@ -87,7 +87,7 @@ UI.notifyGracefulShutdown = function() {
 /**
  * Notify user that reservation error happened.
  */
-UI.notifyReservationError = function(code, msg) {
+UI.notifyReservationError = function (code, msg) {
     messageHandler.showError({
         descriptionArguments: {
             code,
@@ -103,14 +103,14 @@ UI.notifyReservationError = function(code, msg) {
  * @param {string} id user id
  * @param {string} displayName new nickname
  */
-UI.changeDisplayName = function(id, displayName) {
+UI.changeDisplayName = function (id, displayName) {
     VideoLayout.onDisplayNameChanged(id, displayName);
 };
 
 /**
  * Initialize conference UI.
  */
-UI.initConference = function() {
+UI.initConference = function () {
     const { getState } = APP.store;
     const { id, name } = getLocalParticipant(getState);
 
@@ -127,7 +127,7 @@ UI.initConference = function() {
  * Returns the shared document manager object.
  * @return {EtherpadManager} the shared document manager object
  */
-UI.getSharedVideoManager = function() {
+UI.getSharedVideoManager = function () {
     return sharedVideoManager;
 };
 
@@ -137,7 +137,7 @@ UI.getSharedVideoManager = function() {
  * @returns {boolean} true if the UI is ready and the conference should be
  * established, false - otherwise (for example in the case of welcome page)
  */
-UI.start = function() {
+UI.start = function () {
     // Set the defaults for prompt dialogs.
     $.prompt.setDefaults({ persistent: false });
 
@@ -188,8 +188,8 @@ UI.bindEvents = () => {
 
     // Resize and reposition videos in full screen mode.
     $(document).on(
-            'webkitfullscreenchange mozfullscreenchange fullscreenchange',
-            onResize);
+        'webkitfullscreenchange mozfullscreenchange fullscreenchange',
+        onResize);
 
     $(window).resize(onResize);
 };
@@ -199,7 +199,7 @@ UI.bindEvents = () => {
  */
 UI.unbindEvents = () => {
     $(document).off(
-            'webkitfullscreenchange mozfullscreenchange fullscreenchange');
+        'webkitfullscreenchange mozfullscreenchange fullscreenchange');
 
     $(window).off('resize');
 };
@@ -239,7 +239,7 @@ UI.getSharedDocumentManager = () => etherpadManager;
  * Show user on UI.
  * @param {JitsiParticipant} user
  */
-UI.addUser = function(user) {
+UI.addUser = function (user) {
     const id = user.getId();
     const displayName = user.getDisplayName();
     const status = user.getStatus();
@@ -292,7 +292,7 @@ UI.updateUserStatus = (user, status) => {
 /**
  * Toggles filmstrip.
  */
-UI.toggleFilmstrip = function() {
+UI.toggleFilmstrip = function () {
     const { visible } = APP.store.getState()['features/filmstrip'];
 
     APP.store.dispatch(setFilmstripVisible(!visible));
@@ -306,12 +306,12 @@ UI.toggleChat = () => APP.store.dispatch(toggleChat());
 /**
  * Handle new user display name.
  */
-UI.inputDisplayNameHandler = function(newDisplayName) {
+UI.inputDisplayNameHandler = function (newDisplayName) {
     eventEmitter.emit(UIEvents.NICKNAME_CHANGED, newDisplayName);
 };
 
 // FIXME check if someone user this
-UI.showLoginPopup = function(callback) {
+UI.showLoginPopup = function (callback) {
     logger.log('password is required');
 
     const message
@@ -323,7 +323,7 @@ UI.showLoginPopup = function(callback) {
                 class="input-control"
                 placeholder="user password">`
 
-    ;
+        ;
 
     // eslint-disable-next-line max-params
     const submitFunction = (e, v, m, f) => {
@@ -341,7 +341,7 @@ UI.showLoginPopup = function(callback) {
     });
 };
 
-UI.askForNickname = function() {
+UI.askForNickname = function () {
     // eslint-disable-next-line no-alert
     return window.prompt('Your nickname (optional)');
 };
@@ -349,7 +349,7 @@ UI.askForNickname = function() {
 /**
  * Sets muted audio state for participant
  */
-UI.setAudioMuted = function(id, muted) {
+UI.setAudioMuted = function (id, muted) {
     VideoLayout.onAudioMute(id, muted);
     if (APP.conference.isLocalId(id)) {
         APP.conference.updateAudioIconEnabled();
@@ -359,7 +359,7 @@ UI.setAudioMuted = function(id, muted) {
 /**
  * Sets muted video state for participant
  */
-UI.setVideoMuted = function(id, muted) {
+UI.setVideoMuted = function (id, muted) {
     VideoLayout.onVideoMute(id, muted);
     if (APP.conference.isLocalId(id)) {
         APP.conference.updateVideoIconEnabled();
@@ -380,7 +380,7 @@ UI.updateAllVideos = () => VideoLayout.updateAllVideos();
  * @param type the type of the event we're listening for
  * @param listener a function that would be called when notified
  */
-UI.addListener = function(type, listener) {
+UI.addListener = function (type, listener) {
     eventEmitter.on(type, listener);
 };
 
@@ -389,7 +389,7 @@ UI.addListener = function(type, listener) {
  *
  * @returns {void}
  */
-UI.removeAllListeners = function() {
+UI.removeAllListeners = function () {
     eventEmitter.removeAllListeners();
 };
 
@@ -399,7 +399,7 @@ UI.removeAllListeners = function() {
  * @param type the type of the event we're listening for
  * @param listener the listener we want to remove
  */
-UI.removeListener = function(type, listener) {
+UI.removeListener = function (type, listener) {
     eventEmitter.removeListener(type, listener);
 };
 
@@ -426,7 +426,7 @@ UI.dockToolbar = dock => APP.store.dispatch(dockToolbox(dock));
  * @param {string} avatarURL - The URL to avatar image to display.
  * @returns {void}
  */
-UI.refreshAvatarDisplay = function(id) {
+UI.refreshAvatarDisplay = function (id) {
     VideoLayout.changeUserAvatar(id);
 };
 
@@ -434,7 +434,7 @@ UI.refreshAvatarDisplay = function(id) {
  * Notify user that connection failed.
  * @param {string} stropheErrorMsg raw Strophe error message
  */
-UI.notifyConnectionFailed = function(stropheErrorMsg) {
+UI.notifyConnectionFailed = function (stropheErrorMsg) {
     let descriptionKey;
     let descriptionArguments;
 
@@ -456,7 +456,7 @@ UI.notifyConnectionFailed = function(stropheErrorMsg) {
 /**
  * Notify user that maximum users limit has been reached.
  */
-UI.notifyMaxUsersLimitReached = function() {
+UI.notifyMaxUsersLimitReached = function () {
     messageHandler.showError({
         hideErrorSupportLink: true,
         descriptionKey: 'dialog.maxUsersLimitReached',
@@ -467,7 +467,7 @@ UI.notifyMaxUsersLimitReached = function() {
 /**
  * Notify user that he was automatically muted when joned the conference.
  */
-UI.notifyInitiallyMuted = function() {
+UI.notifyInitiallyMuted = function () {
     messageHandler.participantNotification(
         null,
         'notify.mutedTitle',
@@ -476,7 +476,7 @@ UI.notifyInitiallyMuted = function() {
         null);
 };
 
-UI.handleLastNEndpoints = function(leavingIds, enteringIds) {
+UI.handleLastNEndpoints = function (leavingIds, enteringIds) {
     VideoLayout.onLastNEndpointsChanged(leavingIds, enteringIds);
 };
 
@@ -490,19 +490,19 @@ UI.setAudioLevel = (id, lvl) => VideoLayout.setAudioLevel(id, lvl);
 /**
  * Hide connection quality statistics from UI.
  */
-UI.hideStats = function() {
+UI.hideStats = function () {
     VideoLayout.hideStats();
 };
 
 
-UI.notifyTokenAuthFailed = function() {
+UI.notifyTokenAuthFailed = function () {
     messageHandler.showError({
         descriptionKey: 'dialog.tokenAuthFailed',
         titleKey: 'dialog.tokenAuthFailedTitle'
     });
 };
 
-UI.notifyInternalError = function(error) {
+UI.notifyInternalError = function (error) {
     messageHandler.showError({
         descriptionArguments: { error },
         descriptionKey: 'dialog.internalError',
@@ -510,12 +510,14 @@ UI.notifyInternalError = function(error) {
     });
 };
 
-UI.notifyFocusDisconnected = function(focus, retrySec) {
+UI.notifyFocusDisconnected = function (focus, retrySec) {
     messageHandler.participantNotification(
         null, 'notify.focus',
         'disconnected', 'notify.focusFail',
-        { component: focus,
-            ms: retrySec }
+        {
+            component: focus,
+            ms: retrySec
+        }
     );
 };
 
@@ -525,14 +527,14 @@ UI.notifyFocusDisconnected = function(focus, retrySec) {
  * @param {boolean} isRaisedHand indicates the current state of the
  * "raised hand"
  */
-UI.onLocalRaiseHandChanged = function(isRaisedHand) {
+UI.onLocalRaiseHandChanged = function (isRaisedHand) {
     eventEmitter.emit(UIEvents.LOCAL_RAISE_HAND_CHANGED, isRaisedHand);
 };
 
 /**
  * Update list of available physical devices.
  */
-UI.onAvailableDevicesChanged = function() {
+UI.onAvailableDevicesChanged = function () {
     APP.conference.updateAudioIconEnabled();
     APP.conference.updateVideoIconEnabled();
 };
@@ -541,7 +543,7 @@ UI.onAvailableDevicesChanged = function() {
  * Returns the id of the current video shown on large.
  * Currently used by tests (torture).
  */
-UI.getLargeVideoID = function() {
+UI.getLargeVideoID = function () {
     return VideoLayout.getLargeVideoID();
 };
 
@@ -549,7 +551,7 @@ UI.getLargeVideoID = function() {
  * Returns the current video shown on large.
  * Currently used by tests (torture).
  */
-UI.getLargeVideo = function() {
+UI.getLargeVideo = function () {
     return VideoLayout.getLargeVideo();
 };
 
@@ -558,10 +560,10 @@ UI.getLargeVideo = function() {
  * 2 button dialog with buttons - cancel and go to web store.
  * @param url {string} the url of the extension.
  */
-UI.showExtensionExternalInstallationDialog = function(url) {
+UI.showExtensionExternalInstallationDialog = function (url) {
     let openedWindow = null;
 
-    const submitFunction = function(e, v) {
+    const submitFunction = function (e, v) {
         if (v) {
             e.preventDefault();
             if (openedWindow === null || openedWindow.closed) {
@@ -576,7 +578,7 @@ UI.showExtensionExternalInstallationDialog = function(url) {
         }
     };
 
-    const closeFunction = function(e, v) {
+    const closeFunction = function (e, v) {
         if (openedWindow) {
             // Ideally we would close the popup, but this does not seem to work
             // on Chrome. Leaving it uncommented in case it could work
@@ -606,14 +608,14 @@ UI.showExtensionExternalInstallationDialog = function(url) {
  * @param callback {function} function to be executed after user clicks
  * the install button - it should make another attempt to install the extension.
  */
-UI.showExtensionInlineInstallationDialog = function(callback) {
-    const submitFunction = function(e, v) {
+UI.showExtensionInlineInstallationDialog = function (callback) {
+    const submitFunction = function (e, v) {
         if (v) {
             callback();
         }
     };
 
-    const closeFunction = function(e, v) {
+    const closeFunction = function (e, v) {
         if (!v) {
             eventEmitter.emit(UIEvents.EXTERNAL_INSTALLATION_CANCELED);
         }
@@ -635,7 +637,7 @@ UI.showExtensionInlineInstallationDialog = function(callback) {
  * @param {string} url video url
  * @param {string} attributes
 */
-UI.onSharedVideoStart = function(id, url, attributes) {
+UI.onSharedVideoStart = function (id, url, attributes) {
     if (sharedVideoManager) {
         sharedVideoManager.onSharedVideoStart(id, url, attributes);
     }
@@ -647,7 +649,7 @@ UI.onSharedVideoStart = function(id, url, attributes) {
  * @param {string} url video url
  * @param {string} attributes
  */
-UI.onSharedVideoUpdate = function(id, url, attributes) {
+UI.onSharedVideoUpdate = function (id, url, attributes) {
     if (sharedVideoManager) {
         sharedVideoManager.onSharedVideoUpdate(id, url, attributes);
     }
@@ -658,7 +660,7 @@ UI.onSharedVideoUpdate = function(id, url, attributes) {
  * @param {string} id the id of the sender of the command
  * @param {string} attributes
  */
-UI.onSharedVideoStop = function(id, attributes) {
+UI.onSharedVideoStop = function (id, attributes) {
     if (sharedVideoManager) {
         sharedVideoManager.onSharedVideoStop(id, attributes);
     }
@@ -683,7 +685,7 @@ UI.getRemoteVideosCount = () => VideoLayout.getRemoteVideosCount();
  * @param {boolean} isActive - The new remote control active status.
  * @returns {void}
  */
-UI.setRemoteControlActiveStatus = function(participantID, isActive) {
+UI.setRemoteControlActiveStatus = function (participantID, isActive) {
     VideoLayout.setRemoteControlActiveStatus(participantID, isActive);
 };
 
@@ -692,7 +694,7 @@ UI.setRemoteControlActiveStatus = function(participantID, isActive) {
  *
  * @returns {void}
  */
-UI.setLocalRemoteControlActiveChanged = function() {
+UI.setLocalRemoteControlActiveChanged = function () {
     VideoLayout.setLocalRemoteControlActiveChanged();
 };
 

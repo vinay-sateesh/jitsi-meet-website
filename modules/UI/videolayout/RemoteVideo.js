@@ -72,18 +72,22 @@ export default class RemoteVideo extends SmallVideo {
      */
     constructor(user, VideoLayout) {
         super(VideoLayout);
-
+        logger.info("REMOTE VIDEO", user.getRole());
+        const role = user.getRole();
         this.user = user;
         this.id = user.getId();
+
         this.videoSpanId = `participant_${this.id}`;
 
         this._audioStreamElement = null;
         this._supportsRemoteControl = false;
         this.statsPopoverLocation = interfaceConfig.VERTICAL_FILMSTRIP ? 'left bottom' : 'top center';
+
         this.addRemoteVideoContainer();
         this.updateIndicators();
         this.updateDisplayName();
         this.bindHoverHandler();
+
         this.flipX = false;
         this.isLocal = false;
         this.popupMenuIsHovered = false;
@@ -202,19 +206,19 @@ export default class RemoteVideo extends SmallVideo {
         }
 
         ReactDOM.render(
-            <Provider store = { APP.store }>
-                <I18nextProvider i18n = { i18next }>
-                    <AtlasKitThemeProvider mode = 'dark'>
+            <Provider store={APP.store}>
+                <I18nextProvider i18n={i18next}>
+                    <AtlasKitThemeProvider mode='dark'>
                         <RemoteVideoMenuTriggerButton
-                            initialVolumeValue = { initialVolumeValue }
-                            isAudioMuted = { this.isAudioMuted }
-                            menuPosition = { remoteMenuPosition }
+                            initialVolumeValue={initialVolumeValue}
+                            isAudioMuted={this.isAudioMuted}
+                            menuPosition={remoteMenuPosition}
                             onMenuDisplay
-                                = {this._onRemoteVideoMenuDisplay.bind(this)}
-                            onRemoteControlToggle = { onRemoteControlToggle }
-                            onVolumeChange = { onVolumeChange }
-                            participantID = { participantID }
-                            remoteControlState = { remoteControlState } />
+                            ={this._onRemoteVideoMenuDisplay.bind(this)}
+                            onRemoteControlToggle={onRemoteControlToggle}
+                            onVolumeChange={onVolumeChange}
+                            participantID={participantID}
+                            remoteControlState={remoteControlState} />
                     </AtlasKitThemeProvider>
                 </I18nextProvider>
             </Provider>,
@@ -252,6 +256,25 @@ export default class RemoteVideo extends SmallVideo {
         this.updateRemoteVideoMenu();
     }
 
+    /**
+     * Shows or hides the remote video container.
+     * @param {boolean} true to make the local video container visible, false
+     * otherwise
+     */
+    setVisible(visible) {
+        // We toggle the hidden class as an indication to other interested parties
+        // that this container has been hidden on purpose.
+        this.$container.toggleClass('hidden');
+
+        // We still show/hide it as we need to overwrite the style property if we
+        // want our action to take effect. Toggling the display property through
+        // the above css class didn't succeed in overwriting the style.
+        if (visible) {
+            this.$container.show();
+        } else {
+            this.$container.hide();
+        }
+    }
     /**
      * Requests permissions for remote control session.
      */
@@ -553,11 +576,11 @@ export default class RemoteVideo extends SmallVideo {
 
         if (presenceLabelContainer) {
             ReactDOM.render(
-                <Provider store = { APP.store }>
-                    <I18nextProvider i18n = { i18next }>
+                <Provider store={APP.store}>
+                    <I18nextProvider i18n={i18next}>
                         <PresenceLabel
-                            participantID = { this.id }
-                            className = 'presence-label' />
+                            participantID={this.id}
+                            className='presence-label' />
                     </I18nextProvider>
                 </Provider>,
                 presenceLabelContainer);

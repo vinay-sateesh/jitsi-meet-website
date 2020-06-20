@@ -169,8 +169,10 @@ const Filmstrip = {
             return { remoteThumbs };
         }
 
-        return { remoteThumbs,
-            localThumb };
+        return {
+            remoteThumbs,
+            localThumb
+        };
 
     }
 };

@@ -1,8 +1,9 @@
 // @flow
 
 import _ from 'lodash';
+import { showNotification, hideNotification } from '../../../notifications'
 import React from 'react';
-import { getLocalParticipant } from '../../../base/participants'
+import { getLocalParticipant, participantRoleChanged, getParticipantById } from '../../../base/participants'
 import { db } from '../../../base/config/firebase'
 import VideoLayout from '../../../../../modules/UI/videolayout/VideoLayout';
 import { getConferenceNameForTitle } from '../../../base/conference';
@@ -33,6 +34,7 @@ import InviteMore from './InviteMore';
 import Labels from './Labels';
 import { default as Notice } from './Notice';
 import { default as Subject } from './Subject';
+import logger from '../../../base/redux/logger';
 
 declare var APP: Object;
 declare var config: Object;
@@ -120,10 +122,9 @@ class Conference extends AbstractConference<Props, *> {
         this.state = {
             // user: auth().currentUser,
             calls: [],
-            to: '',
-            from: '',
+            onCall: [],
             readError: null,
-            writeError: null
+            currentNotificationId: null
         };
         // Throttle and bind this component's mousemove handler to prevent it
         // from firing too often.
@@ -151,13 +152,44 @@ class Conference extends AbstractConference<Props, *> {
          */
         this.setState({ readError: null });
         try {
-            db.ref("calls").on("value", snapshot => {
+            db.ref("calls").on("child_added", snap => {
+
                 let calls = [];
-                snapshot.forEach((snap) => {
-                    calls.push(snap.val());
-                });
+
+                calls.push({ ...snap.val(), key: snap.key });
                 this.setState({ calls });
+
+                const customActionHandler = () => {
+                    this.state.onCall.push(snap.val());
+                    this.state.currentNotificationId ?
+                        this.props.dispatch(hideNotification(this.state.currentNotificationId))
+                        : console.log('No notification id set');
+                    console.log(this.state.onCall);
+                    this.props.dispatch(participantRoleChanged(snap.val().uid, 'onCall'));
+
+                    //TODO - if person is already on call disable the call button
+                };
+                /**
+                 * Show someone is calling you only if you are
+                 * the meeting host of a conference that contains
+                 * that participant
+                 */
+                if (this.props._localParticipant.role === 'moderator' && this.props._roomName === snap.val().roomName) {
+                    //Noitify moderator about call for 15 seconds
+                    const notification = showNotification({
+                        titleKey: `${snap.val().name} is calling you!`,
+                        description: <div>Just ignore this notification if you don't want to pick up</div>,
+                        descriptionKey: snap.val().uid,
+                        customActionNameKey: 'Accept Call',
+                        customActionHandler
+
+                    }, 15000);
+                    this.setState({ currentNotificationId: notification.uid });
+                    this.props.dispatch(notification);
+                }
+
             });
+
         } catch (error) {
             this.setState({ readError: error.message });
         }
@@ -172,7 +204,17 @@ class Conference extends AbstractConference<Props, *> {
      * @inheritdoc
      * returns {void}
      */
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps, prevState) {
+        /**
+         * Check if theres any new participants on a call
+         * and update the filmstrip accordingly
+         */
+        if (this.props._localParticipant.role !== prevProps._localParticipant.role && this.props._localParticipant.role === 'onCall') {
+
+            const participant = getParticipantById(this.props._state, this.state.onCall[this.state.onCall.length - 1].uid);
+            logger.info('UPDATED', participant)
+            VideoLayout.addRemoteParticipantContainer(participant);
+        }
         if (this.props._shouldDisplayTileView
             === prevProps._shouldDisplayTileView) {
             return;
@@ -192,12 +234,38 @@ class Conference extends AbstractConference<Props, *> {
      * @inheritdoc
      */
     componentWillUnmount() {
+        this._deleteCalls();
         APP.UI.unbindEvents();
 
         FULL_SCREEN_EVENTS.forEach(name =>
             document.removeEventListener(name, this._onFullScreenChange));
 
         APP.conference.isJoined() && this.props.dispatch(disconnect());
+    }
+    /**
+     * We don't need to keep calls made during the meeting
+     * So after meeting ends delete them!
+     * Currently they are deleted immediately
+     * TODO - or delete them if they get rejected by host
+     * or add a timeout after which it is assumed
+     * that the host rejected the call
+     */
+    _deleteCalls() {
+        console.log(this.state.calls);
+        this.state.calls.map((call) => {
+            if (call.roomName === this.props._roomName) {
+
+                var userRef = db.ref('calls/' + call.key);
+                userRef.on('value', (snap) => {
+                    console.log(snap.val());
+                })
+                userRef.remove();
+
+            }
+        })
+        this.setState({ calls: [] })
+
+
     }
 
     /**
@@ -207,7 +275,8 @@ class Conference extends AbstractConference<Props, *> {
      * @returns {ReactElement}
      */
     render() {
-        console.log("CALLS", this.state.calls);
+        const dateFromDb = this.state.calls[0] ? new Date(this.state.calls[0].timestamp).getTime() : Date.now();
+        console.log("CALLS", (Date.now() - dateFromDb) / 1000);
         // console.log("local participant", this.props._localParticipant);
         const {
             // XXX The character casing of the name filmStripOnly utilized by
@@ -237,7 +306,7 @@ class Conference extends AbstractConference<Props, *> {
                     <Filmstrip filmstripOnly={filmstripOnly} />
                 </div>
 
-                {filmstripOnly || _showPrejoin || <ToolboxParticipant localParticipant={this.props._localParticipant} />}
+                {filmstripOnly || _showPrejoin || <ToolboxParticipant roomName={this.props._roomName} localParticipant={this.props._localParticipant} />}
                 {filmstripOnly || <Chat />}
 
                 {this.renderNotificationsContainer()}
@@ -308,6 +377,7 @@ class Conference extends AbstractConference<Props, *> {
 function _mapStateToProps(state) {
     return {
         ...abstractMapStateToProps(state),
+        _state: state,
         _localParticipant: getLocalParticipant(state),
         _iAmRecorder: state['features/base/config'].iAmRecorder,
         _layoutClassName: LAYOUT_CLASSNAMES[getCurrentLayout(state)],
