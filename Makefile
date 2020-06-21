@@ -11,7 +11,7 @@ STYLES_BUNDLE = css/all.bundle.css
 STYLES_DESTINATION = css/all.css
 STYLES_MAIN = css/main.scss
 WEBPACK = ./node_modules/.bin/webpack
-WEBPACK_DEV_SERVER = ./node_modules/.bin/webpack-dev-server
+WEBPACK_DEV_SERVER = ./node_modules/.bin/webpack-dev-server --host 13.233.87.145
 
 all: compile deploy clean
 
