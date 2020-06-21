@@ -48,7 +48,7 @@ class CallButton extends AbstractButton<Props, State> {
         this._isMounted = true;
         this.state = {
             writeError: false,
-
+            disabled: false
         };
     }
 
@@ -86,8 +86,15 @@ class CallButton extends AbstractButton<Props, State> {
     }
 
     _handleClick() {
+        this.setState({ disabled: true })
         this.handleSendCall();
     }
+
+
+    _isDisabled() {
+        return this.state.disabled;
+    }
+
     render() {
 
         return (super.render())

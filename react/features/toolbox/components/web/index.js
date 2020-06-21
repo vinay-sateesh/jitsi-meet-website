@@ -3,3 +3,4 @@ export { default as VideoSettingsButton } from './VideoSettingsButton';
 export { default as ToolbarButton } from './ToolbarButton';
 export { default as Toolbox } from './Toolbox';
 export { default as ToolboxParticipant } from './ToolboxParticipant';
+export { default as selectToolbox } from './selectToolbox';

@@ -20,7 +20,8 @@ import {
     ToolboxParticipant,
     fullScreenChanged,
     setToolboxAlwaysVisible,
-    showToolbox
+    showToolbox,
+    selectToolbox
 } from '../../../toolbox';
 import { LAYOUTS, getCurrentLayout } from '../../../video-layout';
 import { maybeShowSuboptimalExperienceNotification } from '../../functions';
@@ -124,7 +125,8 @@ class Conference extends AbstractConference<Props, *> {
             calls: [],
             onCall: [],
             readError: null,
-            currentNotificationId: null
+            currentNotificationId: null,
+            localRole: this.props._localParticipant.role
         };
         // Throttle and bind this component's mousemove handler to prevent it
         // from firing too often.
@@ -298,7 +300,7 @@ class Conference extends AbstractConference<Props, *> {
                     <Filmstrip filmstripOnly={filmstripOnly} />
                 </div>
 
-                {filmstripOnly || _showPrejoin || <ToolboxParticipant roomName={this.props._roomName} localParticipant={this.props._localParticipant} />}
+                {filmstripOnly || _showPrejoin || selectToolbox(this.props._roomName, this.props._localParticipant)}
                 {filmstripOnly || <Chat />}
 
                 {this.renderNotificationsContainer()}
