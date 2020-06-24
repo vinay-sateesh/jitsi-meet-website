@@ -1,12 +1,20 @@
 // @flow
-
+import { db } from '../../../base/config/firebase'
+import UIEvents from '../../../../../service/UI/UIEvents';
 import React, { Component } from 'react';
+import { getLocalVideoType } from '../../../base/tracks';
+import {
+    VIDEO_MUTISM_AUTHORITY,
+    setVideoMuted
+} from '../../../base/media';
+import { muteLocal } from '../../../remote-video-menu/actions';
 import CallButton from './CallButton'
 import {
     ACTION_SHORTCUT_TRIGGERED,
     createShortcutEvent,
     createToolbarEvent,
-    sendAnalytics
+    sendAnalytics,
+    VIDEO_MUTE
 } from '../../../analytics';
 import { openDialog, toggleDialog } from '../../../base/dialog';
 import { translate } from '../../../base/i18n';
@@ -194,7 +202,15 @@ type Props = {
     /**
      * Name of room participant is part of
      */
-    roomName: string
+    roomName: string,
+    /**
+     * MEDIA_TYPE of the local video.
+     */
+    _videoMediaType: string,
+    /**
+     * local participant
+     */
+    _localParticipant: Object
 };
 
 /**
@@ -205,7 +221,9 @@ type State = {
     /**
      * The width of the browser's window.
      */
-    windowWidth: number
+    windowWidth: number,
+    readError: any,
+    onCall: Array<any>
 };
 
 declare var APP: Object;
@@ -256,10 +274,36 @@ class Toolbox extends Component<Props, State> {
         this._onShortcutToggleTileView = this._onShortcutToggleTileView.bind(this);
 
         this.state = {
-            windowWidth: window.innerWidth
+            windowWidth: window.innerWidth,
+            readError: null,
+            onCall: []
         };
     }
+    /**
+         * Changes the muted state.
+         *
+         * @override
+         * @param {boolean} videoMuted - Whether video should be muted or not.
+         * @protected
+         * @returns {void}
+         */
+    _setVideoMuted(videoMuted: boolean) {
+        sendAnalytics(createToolbarEvent(VIDEO_MUTE, { enable: videoMuted }));
 
+        const mediaType = this.props._videoMediaType;
+
+        this.props.dispatch(
+            setVideoMuted(
+                videoMuted,
+                mediaType,
+                VIDEO_MUTISM_AUTHORITY.USER,
+                /* ensureTrack */ true));
+
+        // FIXME: The old conference logic still relies on this event being
+        // emitted.
+        typeof APP === 'undefined'
+            || APP.UI.emitEvent(UIEvents.VIDEO_MUTED, videoMuted, true);
+    }
     /**
      * Sets keyboard shortcuts for to trigger ToolbarButtons actions.
      *
@@ -267,6 +311,25 @@ class Toolbox extends Component<Props, State> {
      * @returns {void}
      */
     componentDidMount() {
+        /**
+         * Listen for when participant is on a call
+         */
+        try {
+            db.ref("onCall").on("child_added", snap => {
+
+                this.setState({ onCall: [...this.state.onCall, snap.val().uid] })
+
+            });
+
+        } catch (error) {
+            this.setState({ readError: error.message });
+        }
+        /**
+        * Participant starts off muted
+        */
+
+        this.props.dispatch(muteLocal(true));
+        this._setVideoMuted(true);
         const KEYBOARD_SHORTCUTS = [
             this._shouldShowButton('videoquality') && {
                 character: 'A',
@@ -1269,10 +1332,10 @@ class Toolbox extends Component<Props, State> {
                     }
                 </div>
                 <div className='button-group-center'>
-                    {this._renderAudioButton()}
+                    {this.state.onCall.includes(this.props.localParticipant.id) ? this._renderAudioButton() : <div></div>}
                     <HangupButton
                         visible={this._shouldShowButton('hangup')} />
-                    {this._renderVideoButton()}
+                    {this.state.onCall.includes(this.props.localParticipant.id) ? this._renderVideoButton() : <div />}
                 </div>
                 <div className='button-group-right'>
                     {buttonsRight.indexOf('localrecording') !== -1
@@ -1292,7 +1355,7 @@ class Toolbox extends Component<Props, State> {
                             tooltip={t('toolbar.invite')} />}
                     {buttonsRight.indexOf('security') !== -1
                         && <SecurityDialogButton customClass='security-toolbar-button' />}
-                    {buttonsRight.indexOf('overflowmenu') !== -1
+                    {/* {buttonsRight.indexOf('overflowmenu') !== -1
                         && <OverflowMenuButton
                             isOpen={_overflowMenuVisible}
                             onVisibilityChange={this._onSetOverflowVisible}>
@@ -1301,7 +1364,7 @@ class Toolbox extends Component<Props, State> {
                                 className='overflow-menu'>
                                 {overflowMenuContent}
                             </ul>
-                        </OverflowMenuButton>}
+                        </OverflowMenuButton>} */}
                 </div>
             </div>);
     }
@@ -1367,8 +1430,9 @@ function _mapStateToProps(state) {
     // NB: We compute the buttons again here because if URL parameters were used to
     // override them we'd miss it.
     const buttons = new Set(interfaceConfig.TOOLBAR_BUTTONS);
-
+    const tracks = state['features/base/tracks'];
     return {
+        _videoMediaType: getLocalVideoType(tracks),
         _chatOpen: state['features/chat'].isOpen,
         _conference: conference,
         _desktopSharingEnabled: desktopSharingEnabled,
@@ -1388,7 +1452,8 @@ function _mapStateToProps(state) {
             || sharedVideoStatus === 'start'
             || sharedVideoStatus === 'pause',
         _visible: isToolboxVisible(state),
-        _visibleButtons: equals(visibleButtons, buttons) ? visibleButtons : buttons
+        _visibleButtons: equals(visibleButtons, buttons) ? visibleButtons : buttons,
+        _localParticipant: localParticipant
     };
 }
 

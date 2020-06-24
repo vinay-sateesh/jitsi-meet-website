@@ -97,7 +97,7 @@ var config = {
     // startAudioOnly: false,
 
     // Every participant after the Nth will start audio muted.
-    // startAudioMuted: 10,
+    startAudioMuted: 1,
 
     // Start calls with audio muted. Unlike the option above, this one is only
     // applied locally. FIXME: having these 2 options is confusing.
@@ -136,7 +136,7 @@ var config = {
     // enableLayerSuspension: false,
 
     // Every participant after the Nth will start video muted.
-    // startVideoMuted: 10,
+    startVideoMuted: 1,
 
     // Start calls with video muted. Unlike the option above, this one is only
     // applied locally. FIXME: having these 2 options is confusing.
@@ -162,7 +162,7 @@ var config = {
 
     // The media sources to use when using screen sharing with the Chrome
     // extension.
-    desktopSharingChromeSources: [ 'screen', 'window', 'tab' ],
+    desktopSharingChromeSources: ['screen', 'window', 'tab'],
 
     // Required version of Chrome extension
     desktopSharingChromeMinExtVersion: '0.1',

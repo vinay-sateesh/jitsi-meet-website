@@ -1237,13 +1237,13 @@ class Toolbox extends Component<Props, State> {
                 <div className='button-group-left'>
                     {buttonsLeft.indexOf('desktop') !== -1
                         && this._renderDesktopSharingButton()}
-                    {buttonsLeft.indexOf('raisehand') !== -1
+                    {/* {buttonsLeft.indexOf('raisehand') !== -1
                         && <ToolbarButton
                             accessibilityLabel={t('toolbar.accessibilityLabel.raiseHand')}
                             icon={IconRaisedHand}
                             onClick={this._onToolbarToggleRaiseHand}
                             toggled={_raisedHand}
-                            tooltip={t('toolbar.raiseHand')} />}
+                            tooltip={t('toolbar.raiseHand')} />} */}
                     {buttonsLeft.indexOf('chat') !== -1
                         && <div className='toolbar-button-with-badge'>
                             <ToolbarButton

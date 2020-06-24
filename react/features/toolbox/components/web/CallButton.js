@@ -4,7 +4,7 @@ import React, { Component } from 'react'
 import { connect } from '../../../base/redux';
 import AbstractButton from '../../../base/toolbox/components/AbstractButton';
 import type { AbstractButtonProps } from '../../../base/toolbox';
-import { IconMicDisabled, IconMicrophone } from '../../../base/icons';
+import { IconMicDisabled, IconMicrophone, IconPhone } from '../../../base/icons';
 import { db } from '../../../base/config/firebase'
 
 type Props = AbstractButtonProps & {
@@ -34,8 +34,8 @@ type Props = AbstractButtonProps & {
 }
 class CallButton extends AbstractButton<Props, State> {
     _isMounted: boolean;
-    icon = IconMicrophone;
-    toggledIcon = IconMicDisabled;
+    icon = IconPhone;
+    toggledIcon = IconPhone;
     /**
     * Initializes a new {@code CallButton} instance.
     *

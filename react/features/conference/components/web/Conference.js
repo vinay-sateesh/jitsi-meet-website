@@ -148,7 +148,7 @@ class Conference extends AbstractConference<Props, *> {
      *
      * @inheritdoc
      */
-    componentDidMount() {
+    async componentDidMount() {
         /**
          * Listen to firebase to get any incoming calls
          */
@@ -161,8 +161,26 @@ class Conference extends AbstractConference<Props, *> {
                 calls.push({ ...snap.val(), key: snap.key });
                 this.setState({ calls });
 
-                const customActionHandler = () => {
+                const customActionHandler = async () => {
                     this.state.onCall.push(snap.val());
+                    try {
+                        await db.ref("onCall").push({
+
+                            uid: snap.val().uid,
+
+                        }, (err) => {
+                            if (err) {
+                                console.log(err);
+                            }
+                            else {
+                                console.log('you are on a call')
+                            }
+
+                        });
+
+                    } catch (error) {
+                        console.log(error)
+                    }
                     this.state.currentNotificationId ?
                         this.props.dispatch(hideNotification(this.state.currentNotificationId))
                         : console.log('No notification id set');
@@ -299,8 +317,10 @@ class Conference extends AbstractConference<Props, *> {
                     {hideLabels || <Labels />}
                     <Filmstrip filmstripOnly={filmstripOnly} />
                 </div>
-
+                {/*
+                 Enable this once we fix server assigning roles  */}
                 {filmstripOnly || _showPrejoin || selectToolbox(this.props._roomName, this.props._localParticipant)}
+                {/* {filmstripOnly || _showPrejoin || <ToolboxParticipant roomName={this.props._roomName} localParticipant={this.props._localParticipant} />} */}
                 {filmstripOnly || <Chat />}
 
                 {this.renderNotificationsContainer()}
