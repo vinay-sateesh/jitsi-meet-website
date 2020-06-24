@@ -12,6 +12,7 @@ import {
     SET_LOADABLE_AVATAR_URL
 } from './actionTypes';
 import { LOCAL_PARTICIPANT_DEFAULT_ID, PARTICIPANT_ROLE } from './constants';
+import logger from '../redux/logger';
 
 /**
  * Participant object.
@@ -147,6 +148,7 @@ function _participant(state: Object = {}, action) {
                 const newState = { ...state };
 
                 for (const key in participant) {
+                    logger.log("PARTICIPANT_UPDATED", key)
                     if (participant.hasOwnProperty(key)
                         && PARTICIPANT_PROPS_TO_OMIT_WHEN_UPDATE.indexOf(key)
                         === -1) {

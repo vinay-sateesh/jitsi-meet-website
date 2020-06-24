@@ -181,6 +181,7 @@ class Conference extends AbstractConference<Props, *> {
                     } catch (error) {
                         console.log(error)
                     }
+                    //Hide the notif once it has been acted upon
                     this.state.currentNotificationId ?
                         this.props.dispatch(hideNotification(this.state.currentNotificationId))
                         : console.log('No notification id set');
@@ -287,8 +288,8 @@ class Conference extends AbstractConference<Props, *> {
      * @returns {ReactElement}
      */
     render() {
-        const dateFromDb = this.state.calls[0] ? new Date(this.state.calls[0].timestamp).getTime() : Date.now();
-        console.log("CALLS", (Date.now() - dateFromDb) / 1000);
+        // const dateFromDb = this.state.calls[0] ? new Date(this.state.calls[0].timestamp).getTime() : Date.now();
+        // console.log("CALLS", (Date.now() - dateFromDb) / 1000);
         // console.log("local participant", this.props._localParticipant);
         const {
             // XXX The character casing of the name filmStripOnly utilized by

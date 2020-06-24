@@ -1,5 +1,6 @@
 // @flow
 import { db } from '../../../base/config/firebase'
+import { showNotification, hideNotification } from '../../../notifications'
 import UIEvents from '../../../../../service/UI/UIEvents';
 import React, { Component } from 'react';
 import { getLocalVideoType } from '../../../base/tracks';
@@ -223,7 +224,8 @@ type State = {
      */
     windowWidth: number,
     readError: any,
-    onCall: Array<any>
+    onCall: Array<any>,
+    currentNotificationId: String
 };
 
 declare var APP: Object;
@@ -276,7 +278,8 @@ class Toolbox extends Component<Props, State> {
         this.state = {
             windowWidth: window.innerWidth,
             readError: null,
-            onCall: []
+            onCall: [],
+            currentNotificationId: null
         };
     }
     /**
@@ -516,6 +519,17 @@ class Toolbox extends Component<Props, State> {
     _doToggleRaiseHand() {
         const { _localParticipantID, _raisedHand } = this.props;
 
+        // this.props.dispatch(participantUpdated({
+        //     // XXX Only the local participant is allowed to update without
+        //     // stating the JitsiConference instance (i.e. participant property
+        //     // `conference` for a remote participant) because the local
+        //     // participant is uniquely identified by the very fact that there is
+        //     // only one local participant.
+
+        //     id: _localParticipantID,
+        //     local: true,
+        //     raisedHand: !_raisedHand
+        // }));
         this.props.dispatch(participantUpdated({
             // XXX Only the local participant is allowed to update without
             // stating the JitsiConference instance (i.e. participant property
@@ -525,7 +539,7 @@ class Toolbox extends Component<Props, State> {
 
             id: _localParticipantID,
             local: true,
-            raisedHand: !_raisedHand
+            interested: true
         }));
     }
 
@@ -875,7 +889,15 @@ class Toolbox extends Component<Props, State> {
         sendAnalytics(createToolbarEvent(
             'raise.hand',
             { enable: !this.props._raisedHand }));
+        // const notification = showNotification({
+        //     titleKey: `${this.props._localParticipant.name ? this.props._localParticipant.name : 'Random Participant'} is interested in buying this!`,
+        //     description: <div></div>,
+        //     descriptionKey: this.props._localParticipant.id,
 
+
+        // }, 2000);
+        // this.setState({ currentNotificationId: notification.uid });
+        // this.props.dispatch(notification);
         this._doToggleRaiseHand();
     }
 
