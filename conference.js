@@ -2243,6 +2243,7 @@ export default {
                             participant.getId(),
                             newValue);
                         break;
+                    case 'raisedHand':
                     case 'interested':
                         APP.store.dispatch(showNotification({
                             descriptionKey: `${participant.getDisplayName() ? participant.getDisplayName() : 'Random Participant'} would like to buy this`,
